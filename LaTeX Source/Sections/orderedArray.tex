@@ -1,0 +1,200 @@
+\subsection*{Περιγραφή}
+
+Μια δομή ενός ταξινομημένου πίνακα χαρακτηρίζεται από την διάταξη των στοιχείων που ταξινομούνται με κάποια σειρά, όπως αριθμητικό, αλφαβητικό κ.λπ. σε αύξουσα ή φθίνουσα διάταξη. Υπάρχουν πολλοί αλγόριθμοι για την ταξινόμηση ενός λεξικογραφικού πίνακα. Η δομή μας είναι υλοποιημένη με βάση τον αλγόριθμο \en Insertion Sort\gr.
+
+\en
+\begin{listing}[ht]
+\begin{minted}[frame=lines, framesep=1em]{cpp}
+
+#pragma once
+#include <string>
+
+using std::string;
+
+class orderedArray
+{
+private:
+    struct Arr
+    {
+        string value;
+        long long unsigned int times;
+    };
+    Arr* Array;
+    long long unsigned int FirstFreeCell;
+protected:
+    bool binarySearch(string, long long  int,long long  int, long long int&, long long int&);
+    bool ReallocateArray(int);
+    void InsertionSort();
+public:
+    orderedArray();
+    ~orderedArray();
+
+    void Insert(string);
+    bool Find(string, long long&);
+    bool Delete(string);
+
+    long long unsigned int getFirstFreeCell() { return FirstFreeCell; }
+
+    string& operator[](unsigned int possition) { return Array[possition].value; }
+};
+\end{minted}
+\caption{Υλοποίηση της κλάσης για τον ταξινομημένο πίνακα}
+\label{listing:5}
+\end{listing}
+
+Ξεκινώντας την υλοποίηση της κλάσης, θα πρέπει να διαπραγματευτούμε τις λειτουργίες της μέσα από το \en header \gr αρχείο της (βλ. Πρόγραμμα \ref{listing:5}). Η κλάση του ταξινομημένου πίνακα φαίνεται να έχει ελάχιστες διαφορές ως προς τις μεταβλητές και τις συναρτήσεις. Παρακάτω θα αναλυθούν μόνο οι κατά περίπτωση διαφορετικές συναρτήσεις. Οι κοινές υλοποιήσεις -- όπως είναι η μέθοδος διαγραφής -- φαίνονται στην προηγούμενη δομή.
+
+\subsection{Μέθοδος εισαγωγής}
+
+Όπως φαίνεται στο παρακάτω τμήμα κώδικα (Πρόγραμμα \ref{listing:6}) η συνάρτηση \en Insert \gr δεν διαφέρει πολύ ως προς την υλοποίηση σε σχέση με την  \en Insert \gr του αταξινόμητου πίνακα.
+
+Αρχικά, ελέγχουμε μέσω της \en Binary Search \gr αν υπάρχει η προς εισαγωγή λέξη ήδη μέσα στον ταξινομημένο πίνακα. Σε περίπτωση που η λέξη δεν υπάρχει καθόλου στον πίνακα, τότε εκτελείται το τμήμα κώδικα που βρίσκεται εντός της \en else\gr. Το υπόλοιπο τμήμα του κώδικα για τη συνάρτηση \en Insert \gr είναι κοινό με του αταξινόμητου πίνακα, με τη διαφορά πως μετά την εκχώρηση των τιμών στις μεταβλητές, εκτελείται η συνάρτηση ταξινόμησης του πίνακα (η \en Insertion Sort \gr που θα αναλύσουμε παρακάτω).
+
+\en
+\begin{listing}[ht]
+\begin{minted}[frame=lines, framesep=1em]{cpp}
+
+void orderedArray::Insert(string word)
+{
+    long long  int temp ,existance_times;
+    if (binary_search(word, 0, LastElement - 1, temp, existance_times))
+        Array[temp].times++;
+    else
+    {
+        ReallocateArray(1);
+        Array[LastElement - 1].value = word;
+        Array[LastElement - 1].times = 1;
+        insertionSort();
+    }
+}
+
+\end{minted}
+\caption{Δημιουργία της συνάρτησής Insert του ταξινομημένου πίνακα}
+\label{listing:6}
+\end{listing}
+\gr
+
+
+\subsection{Μέθοδος αναζήτησής}
+
+Με τη βοήθεια του ταξινομημένου πίνακα, για την αναζήτηση των στοιχείων μπορούμε πλέον να χρησιμοποιήσουμε έναν γρηγορότερο αλγόριθμο για αναζήτηση λέξεων σε σχέση με τον αλγόριθμο σειριακής αναζήτησης.
+
+Η διαδικασία η οποία ακολουθεί ο αλγόριθμος δυαδικής αναζήτησης (\en Binary Search algorithm\gr) σε έναν ταξινομημένο πίνακα είναι:
+
+\begin{enumerate}
+    \item Ξεκινάμε με ένα διάστημα που καλύπτει ολόκληρο τον πίνακα.
+    \item Διαιρούμε επανειλημμένα το διάστημα αναζήτησης στο μισό.
+    \item Εάν η τιμή του κλειδιού αναζήτησης είναι μικρότερη από το στοιχείο στο μέσο του διαστήματος, περιορίζουμε το διάστημα στο κάτω μισό. Διαφορετικά, το περιορίζουμε στο πάνω μισό.
+   \item Ελέγχουμε επανειλημμένα έως ότου βρεθεί η τιμή ή το διάστημα είναι κενό.
+\end{enumerate}
+
+\textit{(Ο αλγόριθμος της δυαδικής αναζήτησης φαίνεται στο Πρόγραμμα \ref{listing:7})}
+
+\en
+\begin{listing}[ht]
+\begin{minted}[frame=lines, framesep=1em]{cpp}
+
+bool orderedArray::binary_search(string word, int left, right, int& temp, int& existance_times)
+{
+    if (right >= left)
+    {
+        long long  int mid = left + (right - left) / 2;
+
+        if (Array[mid].value == word)
+        {
+            temp = mid;
+            existance_times = Array[mid].times;
+            return true;
+        }
+        
+        if (Array[mid].value > word)
+            return binary_search(word, left, mid - 1, temp, existance_times);
+
+        return binary_search(word, mid + 1, right, temp , existance_times);
+    }
+    
+    existance_times = 0;
+    return false;
+}
+
+\end{minted}
+\caption{Δημιουργία της συνάρτησής Binary Search του ταξινομημένου πίνακα}
+\label{listing:7}
+\end{listing}
+\gr
+
+
+\subsection{Μέθοδος ταξινόμησής}
+
+Ο αλγόριθμος \en Insertion Sort \gr είναι ένας απλός αλγόριθμος ταξινόμησης που λειτουργεί παρόμοιος με τον τρόπο ταξινόμησης των παιγνιοχάρτων. Ο πίνακας χωρίζεται ουσιαστικά σε ένα ταξινομημένο και ένα μη ταξινομημένο τμήμα. Οι τιμές από το μη ταξινομημένο τμήμα επιλέγονται και τοποθετούνται στη σωστή θέση στο ταξινομημένο μέρος. 
+
+Σε κάθε επανάληψη, η \en Insertion Sort \gr αφαιρεί ένα στοιχείο από τα δεδομένα εισαγωγής, βρίσκει τη θέση στην οποία ανήκει στη ταξινομημένη λίστα και το εισάγει εκεί. Η διαδικασία αυτή επαναλαμβάνεται έως ότου δεν υπάρχουν άλλα στοιχεία εισόδου (Βλ. αλγόριθμο σε \en C++ \gr στο Πρόγραμμα \ref{listing:8}).
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{||c c c||} 
+ \hline
+ Περίπτωση & Συγκρίσεις & Αντιμεταθέσεις \\
+ \hline\hline
+ Καλύτερή &  $O(n)$ & $O(1)$ \\
+ Χειρότερή & $O(n^2)$ & $O(n^2)$ \\ 
+ \hline
+\end{tabular}
+\caption{Πολυπλοκότητα του \en Selection Sort \gr}
+\label{table:2}
+\end{table}
+
+Για κάθε θέση του πίνακα, ελέγχει την τιμή έναντι της μεγαλύτερης τιμής στη λίστα ταξινόμησης (η οποία συμβαίνει να είναι δίπλα της, δηλαδή στην προηγούμενη θέση του πίνακα που έχει ελεγχθεί). Εάν είναι μεγαλύτερο, αφήνει το στοιχείο στη θέση του και μετακινείται στο επόμενο. Εάν είναι μικρότερο, βρίσκει τη σωστή θέση μέσα στη λίστα ταξινόμησης, μετατοπίζει όλες τις μεγαλύτερες τιμές για να δημιουργήσει κενό και το εισάγει στη σωστή/κενή θέση.
+
+\en
+\begin{listing}[ht]
+\begin{minted}[frame=lines, framesep=1em]{cpp}
+
+void orderedArray::insertionSort()
+{
+    int i,j,Time;
+    string key;
+    for(i = 1; i < LastElement; i++)
+    {
+        key = Array[i].value;
+        Time = Array[i].times;
+        j = i - 1;
+        while(j >= 0 && Array[j].value > key)
+        {
+            Array[j + 1].value = Array[j].value;
+            Array[j + 1].times = Array[j].times;
+            j = j - 1;
+        }
+        Array[j + 1].value = key;
+        Array[j + 1].times = Time;
+    }
+}
+
+\end{minted}
+\caption{Δημιουργία της συνάρτησής Insertion Sort του ταξινομημένου πίνακα}
+\label{listing:8}
+\end{listing}
+\gr
+
+Ο πίνακας που προκύπτει μετά από $i$ επαναλήψεις έχει την ιδιότητα όπου ταξινομούνται οι πρώτες καταχωρήσεις $i+1$ ($+1$ επειδή η πρώτη καταχώρηση παραλείπεται). Σε κάθε επανάληψη η πρώτη εναπομένουσα καταχώριση της εισόδου αφαιρείται και εισάγεται στο αποτέλεσμα, στη σωστή θέση.
+
+
+\subsection{Σχολιασμός και χρόνοι εκτέλεσης}
+
+Ο χρόνος εισαγωγής σε έναν ταξινομημένο πίνακα, είναι αρκετά περισσότερος σε σχέση με την δομή του αταξινόμητου πίνακα που απλά τα στοιχεία εισάγονται στο τέλος. Λόγω της \en Binary Search \gr που εκτελείται για να ελέγξει αν υπάρχει ήδη το στοιχείο μέσα στον πίνακα και της \en Insertion Sort \gr που όπως είδαμε στον Πίνακα \ref{table:2} έχει χειρότερη περίπτωση $O(n^2)$, όπου μπορούμε να συμπεράνουμε πως αυτό καθιστά αργή την δομή μας ως προς την εισαγωγή.
+
+\gr
+\begin{table}[!h]
+\centering
+\begin{tabular}{||c c c||} 
+ \hline
+ Δομή & Χρόνος Εισαγωγής & Χρόνος Αναζήτησης/10χιλ. λέξεις \\
+ \hline\hline
+ Ταξινομημένος πίνακας & $\approx$14.3950753 ώρες & $\approx$1.58043333 λεπτά \\
+ \hline
+\end{tabular}
+\caption{Χρόνοι εκτέλεσης εισαγωγής και αναζήτησης για τον ταξινομημένο πίνακα}
+\label{table:4}
+\end{table}
+
+Όσο για την αναζήτηση, όπου η διαδικασία που ακολουθείται συμβαίνει αναδρομικά, γνωρίζουμε ότι ο αλγόριθμος της δυαδικής αναζήτησης έχει πολυπλοκότητα $O(log(n))$ που μπορούμε να το διαπιστώσουμε αν αναλύσουμε τον κώδικα του. Αν εξετάσουμε συνολικά την δομή του ταξινομημένου πίνακα για δέκα χιλιάδες λέξεις, έχουμε τα παραπάνω αποτελέσματα (Πίνακας \ref{table:4}).
